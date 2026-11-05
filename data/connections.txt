@@ -1,1 +1,13 @@
+# BuildingA|BuildingB
 
+Library|Student Union
+
+Library|Business Building
+
+Student Union|Science Building
+
+Student Union|Gym
+
+Science Building|Engineering Building
+
+Business Building|Gym
