@@ -1,1 +1,20 @@
+DEPARTMENT TREE DESIGN (MEMBER C)
 
+The DepartmentTree module uses a general tree rather than a binary tree. Each
+DepartmentNode stores the department's original spelling, a non-owning pointer
+to its parent, and a vector of unique_ptr children. The vector allows any number
+of children and preserves sibling insertion order. unique_ptr gives the tree
+clear ownership and recursively releases all nodes when the tree is cleared or
+destroyed.
+
+Department names are trimmed and compared case-insensitively, while the spelling
+from the first accepted record is preserved for display. Searches use a recursive
+depth-first scan of the tree. The parent pointer provides the parent name and
+allows depth to be calculated by walking from a found node to the root.
+
+File loading reads complete lines with getline, skips blank and comment lines,
+splits each record on the pipe character, and validates field count, empty fields,
+duplicate names, the root's NONE parent, and previously accepted parent names.
+Invalid records produce a warning and do not modify the tree. The hierarchy and
+the traversal both use preorder; the hierarchy adds four spaces per depth while
+the traversal prints a single unindented sequence.

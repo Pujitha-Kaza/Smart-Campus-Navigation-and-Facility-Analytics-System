@@ -1,1 +1,66 @@
+DEPARTMENT TREE MILESTONE 1 TESTS
 
+Test DT-1
+Description: Load and display the instructor-provided department hierarchy.
+Input: data/departments.txt
+Expected: 7 accepted, 0 rejected; hierarchy preserves file and sibling order.
+Actual: 7 accepted, 0 rejected; hierarchy exactly matched the expected order and
+four-space indentation.
+Result: PASS
+
+Test DT-2
+Description: Search for the root, a non-root department, and a missing department.
+Input: " university ", "computer science", and "Missing Department"
+Expected: Searches ignore capitalization and outer whitespace; root depth is 0;
+Computer Science has parent College of Engineering and depth 2; missing is false.
+Actual: All expected names, parents, child counts, depths, and outcomes matched.
+Result: PASS
+
+Test DT-3
+Description: Add departments and reject invalid menu-style additions.
+Input: Add Data Science under "college of science"; then attempt a capitalization
+duplicate, an unknown parent, and a blank department name.
+Expected: First addition succeeds; the other three fail without changing the tree.
+Actual: Data Science was added at depth 2; duplicate, unknown-parent, and blank-name
+attempts returned the appropriate errors.
+Result: PASS
+
+Test DT-4
+Description: Validate malformed file records, unknown parents, and duplicates.
+Input: testdata/tree_validation/departments.txt
+Expected: 3 accepted and 4 rejected; lowercase parent matching succeeds; duplicate
+names differing only by capitalization are rejected.
+Actual: 3 accepted and 4 rejected with warnings containing filename, line number,
+and reason. The first accepted spelling was retained.
+Result: PASS
+
+Test DT-5
+Description: Exercise an empty tree and add its root without a parent.
+Input: testdata/tree_empty/departments.txt, followed by adding "New Root".
+Expected: 0 accepted and 0 rejected; empty display is clear; New Root is created at
+depth 0 without requiring a parent.
+Actual: All expected empty-state and root-addition behavior matched.
+Result: PASS
+
+Test DT-6
+Description: Load a root-only tree.
+Input: testdata/tree_root_only/departments.txt
+Expected: 1 accepted, 0 rejected, tree size 1, root depth 0.
+Actual: 1 accepted, 0 rejected, tree size 1, root depth 0.
+Result: PASS
+
+Test DT-7
+Description: Attempt to load a missing department file.
+Input: testdata/does_not_exist/departments.txt
+Expected: Print an error naming departments.txt, return an empty tree, and do not
+crash.
+Actual: The error named departments.txt, the load result was 0 accepted and 0
+rejected, and the tree remained usable and empty.
+Result: PASS
+
+Test DT-8
+Description: Compile with strict warnings and run all DepartmentTree assertions.
+Input: g++ -std=c++17 -Wall -Wextra -Wpedantic -Werror
+Expected: Clean compilation and all assertions pass.
+Actual: Clean compilation; "All DepartmentTree tests passed."
+Result: PASS
