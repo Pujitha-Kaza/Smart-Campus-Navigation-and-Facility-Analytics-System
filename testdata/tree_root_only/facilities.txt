@@ -1,0 +1,1 @@
+# Intentionally empty facility data for the root-only department-tree test.

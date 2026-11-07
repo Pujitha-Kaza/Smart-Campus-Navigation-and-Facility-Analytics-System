@@ -1,0 +1,1 @@
+# Intentionally empty connection data for the root-only department-tree test.

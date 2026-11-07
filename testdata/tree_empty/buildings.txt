@@ -1,0 +1,1 @@
+# Intentionally empty building data for the empty department-tree test.

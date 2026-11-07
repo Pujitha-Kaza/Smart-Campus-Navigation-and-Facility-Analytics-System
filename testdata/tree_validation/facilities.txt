@@ -1,0 +1,1 @@
+# Intentionally empty facility data for department validation tests.

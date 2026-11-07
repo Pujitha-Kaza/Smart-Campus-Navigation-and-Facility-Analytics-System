@@ -1,1 +1,22 @@
+# Compiled C/C++ files
+*.o
+*.obj
+*.out
+*.exe
+campus
 
+# Build directories
+build/
+cmake-build-*/
+
+# Debugger, coverage, and profiling output
+*.dSYM/
+*.gcda
+*.gcno
+
+# Editor and operating-system files
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*~
