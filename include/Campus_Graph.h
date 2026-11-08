@@ -14,9 +14,11 @@ class CampusGraph {
 
   public:
     CampusGraph();
-    bool loadFromFile(const string& filename);
+    bool loadBuildings(const string& filename);
+    bool loadConnections(const string& filename);
     void displayGraph() const;
     void displayStatistics() const;
+    void bfsReachability() const;
 };
 
 #endif
