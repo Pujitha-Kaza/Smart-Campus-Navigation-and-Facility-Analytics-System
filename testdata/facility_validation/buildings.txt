@@ -1,0 +1,4 @@
+# Accepted buildings used for facility validation.
+Library
+Student Union
+Science Building

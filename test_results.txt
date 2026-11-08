@@ -64,3 +64,155 @@ Input: g++ -std=c++17 -Wall -Wextra -Wpedantic -Werror
 Expected: Clean compilation and all assertions pass.
 Actual: Clean compilation; "All DepartmentTree tests passed."
 Result: PASS
+
+FACILITY DATABASE AND HASH TABLE TESTS (MEMBER A)
+
+The focused driver is testdata/facility_tests.cpp. The cases below describe its
+assertions and intended evidence. Execution is BLOCKED in this environment:
+neither g++ nor cl.exe is installed, and the official MSYS2 shell extracted to
+the task work directory cannot start (Windows returned
+NtCreateDirectoryObject(...): 0xC0000022). No facility test is reported as
+passing until it is run with the requested compiler.
+
+Test F-1
+Description: Accept valid records and retain their file order.
+Input: testdata/facility_validation/facilities.txt
+Expected: Five valid facility records retained in accepted file order.
+Actual: Not run; compiler unavailable as described above.
+Result: BLOCKED
+
+Test F-2
+Description: Ignore blank lines and first-non-whitespace comment lines.
+Input: Blank line and # comment in testdata/facility_validation/facilities.txt.
+Expected: Neither line is accepted or rejected as a facility.
+Actual: Not run; compiler unavailable as described above.
+Result: BLOCKED
+
+Test F-3
+Description: Reject too few fields with filename, line, and reason.
+Input: F003|Too|Few in testdata/facility_validation/facilities.txt.
+Expected: Record is rejected and a line-specific warning is printed.
+Actual: Not run; compiler unavailable as described above.
+Result: BLOCKED
+
+Test F-4
+Description: Reject too many fields with filename, line, and reason.
+Input: F004|Too|Many|Fields|Here in testdata/facility_validation/facilities.txt.
+Expected: Record is rejected and loading continues.
+Actual: Not run; compiler unavailable as described above.
+Result: BLOCKED
+
+Test F-5
+Description: Reject empty required fields.
+Input: F005|||Category in testdata/facility_validation/facilities.txt.
+Expected: Record is rejected with a warning.
+Actual: Not run; compiler unavailable as described above.
+Result: BLOCKED
+
+Test F-6
+Description: Reject invalid facility ID format.
+Input: x006|Invalid ID|Library|General in the validation fixture.
+Expected: Record is rejected because IDs require F and exactly three digits.
+Actual: Not run; compiler unavailable as described above.
+Result: BLOCKED
+
+Test F-7
+Description: Normalize lowercase IDs in a data file.
+Input: f002|Lowercase ID| library |Help in the validation fixture.
+Expected: Accepted and stored/displayed as F002.
+Actual: Not run; compiler unavailable as described above.
+Result: BLOCKED
+
+Test F-8
+Description: Reject IDs duplicated with different capitalization.
+Input: F001 followed by another F001 in the validation fixture.
+Expected: First record remains; duplicate is rejected.
+Actual: Not run; compiler unavailable as described above.
+Result: BLOCKED
+
+Test F-9
+Description: Reject unknown building references.
+Input: F007|Unknown Building|Nowhere|General.
+Expected: Record is rejected and loading continues.
+Actual: Not run; compiler unavailable as described above.
+Result: BLOCKED
+
+Test F-10
+Description: Handle a missing facilities file.
+Input: testdata/no_such_folder/facilities.txt.
+Expected: Named error and empty database without a crash.
+Actual: Not run; compiler unavailable as described above.
+Result: BLOCKED
+
+Test F-11
+Description: Handle Windows line endings and outer field whitespace.
+Input: A generated CRLF record with spaces and tabs around fields.
+Expected: One accepted record, normalized ID, and canonical building spelling.
+Actual: Not run; compiler unavailable as described above.
+Result: BLOCKED
+
+Test F-12
+Description: Preserve # inside a facility name.
+Input: F009|Hash # in name|Science Building|Research.
+Expected: Facility is accepted with # retained in its name.
+Actual: Not run; compiler unavailable as described above.
+Result: BLOCKED
+
+Test F-13
+Description: Search an uppercase facility ID.
+Input: F004 against data/facilities.txt and data/buildings.txt spellings.
+Expected: F004 and all stored fields are displayed.
+Actual: Not run; compiler unavailable as described above.
+Result: BLOCKED
+
+Test F-14
+Description: Search the same facility ID in lowercase.
+Input: f004 against the accepted data facilities.
+Expected: Same facility as F004 is displayed.
+Actual: Not run; compiler unavailable as described above.
+Result: BLOCKED
+
+Test F-15
+Description: Reject an invalid-format search input.
+Input: 004.
+Expected: Explain that ID must be F followed by exactly three digits.
+Actual: Not run; compiler unavailable as described above.
+Result: BLOCKED
+
+Test F-16
+Description: Report a valid but missing facility ID.
+Input: F999.
+Expected: Display normalized ID F999 as not found.
+Actual: Not run; compiler unavailable as described above.
+Result: BLOCKED
+
+Test F-17
+Description: Retain facilities that share a name.
+Input: F001, F008, and F010 named Shared Name.
+Expected: All distinct IDs remain in file order.
+Actual: Not run; compiler unavailable as described above.
+Result: BLOCKED
+
+Test F-18
+Description: Confirm a genuine hash collision.
+Input: F009 and F010 in testdata/facility_collision/facilities.txt.
+Expected: Both hash to bucket 0 at capacity 11; collision count is 1.
+Actual: Not run; compiler unavailable as described above.
+Result: BLOCKED
+
+Test F-19
+Description: Confirm duplicate insertion does not change collisions.
+Input: Insert F009, F010, then duplicate F009 into a capacity-11 table.
+Expected: Collision count remains 1 after duplicate insertion.
+Actual: Not run; compiler unavailable as described above.
+Result: BLOCKED
+
+Test F-20
+Description: Exercise empty database display and searches.
+Input: Empty FacilityDatabase; search for 004 and F999.
+Expected: Clear empty display and total zero; invalid and missing searches differ.
+Actual: Not run; compiler unavailable as described above.
+Result: BLOCKED
+
+Strict compile command prepared for the driver:
+g++ -std=c++17 -Wall -Wextra -Wpedantic -Werror -Iinclude testdata/facility_tests.cpp src/FacilityDatabase.cpp src/FacilityHashTable.cpp -o facility_tests.exe
