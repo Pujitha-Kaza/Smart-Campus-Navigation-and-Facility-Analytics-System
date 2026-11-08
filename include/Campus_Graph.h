@@ -11,7 +11,7 @@ class CampusGraph {
     vector<string> buildings;
     vector<vector<int>> adjacency;
     int findBuilding(const string& name) const;
-    int normalize(const string& text) const;
+    string normalize(const string& text) const;
 
   public:
     CampusGraph();
