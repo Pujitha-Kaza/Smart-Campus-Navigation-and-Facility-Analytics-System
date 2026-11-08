@@ -23,17 +23,13 @@ bool CampusGraph::loadFromFile(const string& filename) {
   }
   string line;
   while (getline(input, line)) {
-    if (line.empty() || line[0] == "#") {
+    if (line.empty() || line[0] == '#') {
       continue;
     }
     size_t divider = line.find('|');
     if (divider == string::npos) {
       continue;
     }
-    size_t divider = line.find('|');
-	if (divider == string::npos) {
-		continue;
-	}
 	string buildingA = line.substr(0, divider);
 	string buildingB = line.substr(divider + 1);
 	int indexA = findBuilding(buildingA);
