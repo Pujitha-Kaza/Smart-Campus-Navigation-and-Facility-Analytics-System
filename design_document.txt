@@ -18,3 +18,29 @@ duplicate names, the root's NONE parent, and previously accepted parent names.
 Invalid records produce a warning and do not modify the tree. The hierarchy and
 the traversal both use preorder; the hierarchy adds four spaces per depth while
 the traversal prints a single unindented sequence.
+
+FACILITY DATABASE AND HASH TABLE DESIGN (MEMBER A)
+
+The Facility module is split into include/Facility.h for the record and load
+result, include/FacilityHashTable.h and src/FacilityHashTable.cpp for the ID
+index, and include/FacilityDatabase.h and src/FacilityDatabase.cpp for loading,
+validation, display, and search. FacilityDatabase::loadFromFile accepts the
+accepted building names as a const vector<string>& so the shared loader can pass
+the spellings read from buildings.txt. Facilities are retained in a vector in
+accepted file order; the index holds facility values in its own buckets.
+
+The custom hash table starts with 11 buckets. It uses separate chaining, with
+each bucket stored as a dynamically growing vector. Separate chaining was
+selected because the table can accept any number of facilities without a full
+table condition or an arbitrary facility limit. The hash formula processes each
+byte of the normalized uppercase ID in order: h starts at zero, then for each
+character c, h = (h * 31 + unsigned ASCII value of c) % capacity. Lookup hashes
+the normalized ID and checks only entries in that bucket; it never scans the
+facility display vector.
+
+A collision is counted when a unique, accepted key is inserted into a bucket
+that is already nonempty. Duplicate keys are detected before insertion and do
+not increment the collision count. Duplicate facility IDs compare after
+uppercasing, so the first accepted record remains stored; repeated facility
+names are allowed. Since buckets grow dynamically, insertion never fails due
+to a full table.

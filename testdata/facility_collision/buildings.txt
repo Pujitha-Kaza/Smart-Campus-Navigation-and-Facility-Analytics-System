@@ -1,0 +1,2 @@
+# All four expected campus-data filenames are present for this isolated test.
+Library
