@@ -1,20 +1,83 @@
-DEPARTMENT TREE DESIGN (MEMBER C)
+MILESTONE 1 DESIGN DOCUMENT
 
-The DepartmentTree module uses a general tree rather than a binary tree. Each
-DepartmentNode stores the department's original spelling, a non-owning pointer
-to its parent, and a vector of unique_ptr children. The vector allows any number
-of children and preserves sibling insertion order. unique_ptr gives the tree
-clear ownership and recursively releases all nodes when the tree is cleared or
-destroyed.
+Program Structure
+-----------------
+The program is divided into FacilityDatabase/FacilityHashTable, CampusGraph,
+DepartmentTree, and a small coordinating main.cpp. main.cpp accepts zero or one
+data-directory argument, constructs the three modules, loads buildings,
+connections, facilities, and departments in that exact order, then repeats the
+required menu until option 0. Complete input lines are read with getline so
+spaces in names and invalid menu text cannot leave the input stream in a failed
+state. No records, totals, or platform-specific absolute paths are hard-coded.
 
-Department names are trimmed and compared case-insensitively, while the spelling
-from the first accepted record is preserved for display. Searches use a recursive
-depth-first scan of the tree. The parent pointer provides the parent name and
-allows depth to be calculated by walking from a found node to the root.
+Facility Database and Custom Hash Table
+---------------------------------------
+FacilityDatabase stores accepted Facility records in a vector so display order
+matches facilities.txt. ID search is performed by FacilityHashTable rather than
+by scanning that vector. IDs are trimmed, converted to uppercase, and validated
+as F followed by exactly three digits before insertion or lookup.
 
-File loading reads complete lines with getline, skips blank and comment lines,
-splits each record on the pipe character, and validates field count, empty fields,
-duplicate names, the root's NONE parent, and previously accepted parent names.
-Invalid records produce a warning and do not modify the tree. The hierarchy and
-the traversal both use preorder; the hierarchy adds four spaces per depth while
-the traversal prints a single unindented sequence.
+The custom table has an initial and fixed capacity of 11 buckets. For a normalized
+key, its polynomial hash is computed one byte at a time:
+
+  h0 = 0
+  h(i+1) = (h(i) * 31 + unsigned_byte(key[i])) mod 11
+
+The implementation does not use std::hash or a library map/table. It resolves
+collisions with separate chaining: each bucket is a dynamically growing vector
+of Facility objects. Chaining was selected because it has no arbitrary maximum
+number of facilities and never becomes "full"; a chain can grow while all
+lookups remain restricted to the calculated bucket.
+
+A collision is counted when an accepted, nonduplicate insertion enters a bucket
+that already contains at least one facility. Each such insertion adds exactly
+one to the diagnostic. A rejected duplicate adds zero collisions and never
+replaces the first record. The capacity, entry count, and collision count are
+printed with the facilities load summary. The hash_collision test directory
+demonstrates that F009 and F010 both hash to bucket 0 at capacity 11.
+
+Campus Graph and BFS
+--------------------
+CampusGraph represents the undirected, unweighted graph with an adjacency list:
+a vector of accepted building names and a parallel vector of integer-neighbor
+vectors. This representation uses space proportional to vertices plus edges and
+is a natural fit for a relatively sparse walkway graph. Building vertices remain
+in buildings.txt order. Adding both endpoints of an accepted connection to the
+parallel neighbor lists preserves connection insertion order for display and BFS.
+
+Building matching trims outer whitespace and ignores ASCII capitalization while
+display retains the first accepted spelling. Loading rejects malformed records,
+unknown endpoints, self-connections, and duplicate or reversed duplicate edges.
+Statistics sum all neighbor-list sizes and divide by two to count each undirected
+edge once.
+
+BFS uses std::queue, a visited vector, and a distance vector. The start is marked
+visited when enqueued at distance 0. Each undiscovered neighbor is marked when it
+is enqueued, so no vertex enters the queue twice. Neighbor insertion order
+therefore determines deterministic visit order. The traversal prints each
+reachable building with its distance and a reachable-out-of-total count.
+
+Department General Tree
+-----------------------
+DepartmentTree uses a general tree rather than a binary tree. Each DepartmentNode
+stores its accepted spelling, a non-owning parent pointer, and a vector of
+unique_ptr children. The child vector permits any number of children and
+preserves sibling insertion order. unique_ptr gives the tree clear ownership and
+recursively releases all nodes when the root is reset or destroyed.
+
+Names are trimmed and compared case-insensitively. Recursive depth-first search
+finds a department. The parent pointer supplies the displayed parent and allows
+depth to be calculated by walking to the root. Both hierarchy display and the
+sequence traversal are preorder; hierarchy display adds four spaces per depth.
+An empty tree accepts a new root without prompting for a parent. A nonempty tree
+requires an existing parent and rejects duplicate names.
+
+Loading and Error Handling
+--------------------------
+Every loader reads complete lines, skips blank lines and lines whose first
+non-whitespace character is #, trims fields (including carriage returns), and
+continues after rejected records. Warnings include the filename, physical line
+number, and a reason. A missing file prints an error and a zero-count summary;
+the other files still load and the menu remains usable. Facilities validate
+building references against accepted graph buildings, which is why the required
+load order is enforced by main.cpp.

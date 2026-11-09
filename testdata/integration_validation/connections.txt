@@ -1,0 +1,8 @@
+# One valid record followed by several invalid records.
+Library|Student Union
+Student Union|Library
+Library|Library
+Library
+Library|Student Union|Observatory
+|Observatory
+Library|Missing Building

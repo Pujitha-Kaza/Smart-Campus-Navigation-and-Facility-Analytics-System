@@ -1,66 +1,121 @@
-DEPARTMENT TREE MILESTONE 1 TESTS
+MILESTONE 1 TEST RESULTS
 
-Test DT-1
-Description: Load and display the instructor-provided department hierarchy.
-Input: data/departments.txt
-Expected: 7 accepted, 0 rejected; hierarchy preserves file and sibling order.
-Actual: 7 accepted, 0 rejected; hierarchy exactly matched the expected order and
-four-space indentation.
+Local environment: Apple clang 21.0.0, arm64 macOS
+Strict build command:
+  g++ -std=c++17 -Wall -Wextra -Wpedantic -Werror -Iinclude src/*.cpp -o campus
+Result: PASS (no errors or warnings)
+
+TEST M1-1 - Sample loading and required load order
+Description: Load all four instructor files through the integrated program.
+Input: ./campus data
+Expected: Summaries in buildings, connections, facilities, departments order;
+7/0, 6/0, 10/0, and 7/0 accepted/rejected counts.
+Actual: Exactly those four summaries appeared in that order. The facilities
+diagnostic reported capacity 11, entries 10, collisions 1.
 Result: PASS
 
-Test DT-2
-Description: Search for the root, a non-root department, and a missing department.
-Input: " university ", "computer science", and "Missing Department"
-Expected: Searches ignore capitalization and outer whitespace; root depth is 0;
-Computer Science has parent College of Engineering and depth 2; missing is false.
-Actual: All expected names, parents, child counts, depths, and outcomes matched.
+TEST M1-2 - Facility display and ID search outcomes
+Description: Display all sample facilities; search lowercase, invalid, and
+valid-but-missing IDs.
+Input: Menu 1; menu 2 with f004, 004, and F999.
+Expected: Ten facilities in file order; f004 normalizes to F004 and finds
+Computer Lab A; 004 is invalid; F999 is reported not found by normalized ID.
+Actual: All four outcomes and the total of 10 matched.
 Result: PASS
 
-Test DT-3
-Description: Add departments and reject invalid menu-style additions.
-Input: Add Data Science under "college of science"; then attempt a capitalization
-duplicate, an unknown parent, and a blank department name.
-Expected: First addition succeeds; the other three fail without changing the tree.
-Actual: Data Science was added at depth 2; duplicate, unknown-parent, and blank-name
-attempts returned the appropriate errors.
+TEST M1-3 - Hash collision and duplicate insertion
+Description: Demonstrate a collision and verify that a duplicate does not add a
+collision or replace the first accepted record.
+Input: ./campus testdata/hash_collision; F009, F010, then duplicate f009.
+Expected: F009 and F010 hash to bucket 0 at capacity 11; 2 accepted, 1 rejected,
+entries 2, collisions 1; searches return the first two original records.
+Actual: facilities.txt: 2 accepted, 1 rejected; hash capacity 11, entries 2,
+collisions 1. Both accepted records remained searchable and the duplicate was
+rejected as F009.
 Result: PASS
 
-Test DT-4
-Description: Validate malformed file records, unknown parents, and duplicates.
-Input: testdata/tree_validation/departments.txt
-Expected: 3 accepted and 4 rejected; lowercase parent matching succeeds; duplicate
-names differing only by capitalization are rejected.
-Actual: 3 accepted and 4 rejected with warnings containing filename, line number,
-and reason. The first accepted spelling was retained.
+TEST M1-4 - Graph display, counts, and BFS
+Description: Exercise the sample graph, a connected start, isolated start, and
+unknown start.
+Input: Menus 3, 4, and 5 with Library, Observatory, and Missing Building.
+Expected: 7 buildings, 6 connections, degrees 2/3/2/1/2/2/0; Library reaches 6
+in required neighbor order with distances 0 through 3; Observatory reaches 1;
+unknown start is identified.
+Actual: Display order, neighbor order, totals, all degrees, BFS order/distances,
+reachable counts 6 of 7 and 1 of 7, and unknown-name error all matched.
 Result: PASS
 
-Test DT-5
-Description: Exercise an empty tree and add its root without a parent.
-Input: testdata/tree_empty/departments.txt, followed by adding "New Root".
-Expected: 0 accepted and 0 rejected; empty display is clear; New Root is created at
-depth 0 without requiring a parent.
-Actual: All expected empty-state and root-addition behavior matched.
+TEST M1-5 - Department operations
+Description: Search, add, display hierarchy, and run preorder.
+Input: Search "computer science" and a missing name; add Data Science below
+College of Science; display hierarchy and preorder.
+Expected: Case-insensitive search returns the right parent and depth; missing
+search is clear; addition appears last under its parent; preorder preserves order.
+Actual: Computer Science had parent College of Engineering and depth 2; the
+missing name was reported; Data Science was added at depth 2 and appeared in the
+correct hierarchy and preorder positions.
 Result: PASS
 
-Test DT-6
-Description: Load a root-only tree.
-Input: testdata/tree_root_only/departments.txt
-Expected: 1 accepted, 0 rejected, tree size 1, root depth 0.
-Actual: 1 accepted, 0 rejected, tree size 1, root depth 0.
+TEST M1-6 - Empty and root-only department trees
+Description: Check empty display, root creation without a parent prompt, root
+search, duplicate addition, unknown parent, and root-only preorder.
+Input: ./campus testdata/tree_empty and ./campus testdata/tree_root_only.
+Expected: Empty display is clear; New Root can be created without a parent;
+University has parent None/depth 0; duplicate and unknown parent are rejected.
+Actual: Each expected state and error occurred, and both programs returned to the
+menu after the operation.
 Result: PASS
 
-Test DT-7
-Description: Attempt to load a missing department file.
-Input: testdata/does_not_exist/departments.txt
-Expected: Print an error naming departments.txt, return an empty tree, and do not
-crash.
-Actual: The error named departments.txt, the load result was 0 accepted and 0
-rejected, and the tree remained usable and empty.
+TEST M1-7 - Cross-module record validation
+Description: Load blank/comment lines plus duplicate, malformed, empty,
+self-connection, reversed-connection, and unknown-reference records.
+Input: ./campus testdata/integration_validation
+Expected: Warnings name file, line, and reason; valid records remain usable.
+Actual: buildings 3 accepted/2 rejected; connections 1/6; facilities 2/5;
+departments 3/5. Every rejection printed its filename, line, and a valid reason.
+Case-insensitive references loaded using the first accepted spelling.
 Result: PASS
 
-Test DT-8
-Description: Compile with strict warnings and run all DepartmentTree assertions.
-Input: g++ -std=c++17 -Wall -Wextra -Wpedantic -Werror
-Expected: Clean compilation and all assertions pass.
-Actual: Clean compilation; "All DepartmentTree tests passed."
+TEST M1-8 - Missing files and empty structures
+Description: Start with a directory that contains none of the four files.
+Input: ./campus testdata/does_not_exist; then menus 1, 3, 5, and 8.
+Expected: Four filename-specific errors and zero summaries; clear empty-state
+messages; no crash; menu remains usable.
+Actual: All four errors and summaries appeared. Facility, graph, BFS, and tree
+operations handled their empty states and the program exited normally.
 Result: PASS
+
+TEST M1-9 - Menu recovery and names containing spaces
+Description: Enter blank, letters, and out-of-range menu choices, then perform
+valid operations using multiword names.
+Input: blank, abc, 10; BFS "Student Union"; add "Data Science" under
+"College of Science"; continue with more operations.
+Expected: Each invalid choice prints one error; later choices and full-line names
+work without restarting or entering an infinite loop.
+Actual: All invalid choices recovered to the menu and all later operations worked.
+Result: PASS
+
+TEST M1-10 - Optional data-directory and argument count
+Description: Select alternate complete data directories and reject extra args.
+Input: ./campus testdata/hash_collision; ./campus one two
+Expected: The alternate files load; more than one argument prints usage and exits
+with status 1.
+Actual: Alternate files loaded correctly; extra arguments printed
+"Usage: ./campus [data-directory]" and returned status 1.
+Result: PASS
+
+TEST M1-11 - Address/undefined behavior sanitizers
+Description: Build the integrated program with runtime memory diagnostics and
+exercise all three modules.
+Input: g++ -std=c++17 -Wall -Wextra -Wpedantic -fsanitize=address,undefined
+-fno-omit-frame-pointer -Iinclude src/*.cpp -o /tmp/campus-sanitized; run sample
+facility display, graph display/statistics/BFS, hierarchy, and preorder.
+Expected: Normal exit with no sanitizer diagnostic.
+Actual: Normal exit; AddressSanitizer and UndefinedBehaviorSanitizer reported no
+errors.
+Result: PASS
+
+CELL ENVIRONMENT CHECK
+The local tests above are complete. NFR-7 still requires a team member to run the
+strict build and sample execution on a UNT CSE CELL machine before submission.
+Do not mark that check PASS until it has actually been performed and recorded.
