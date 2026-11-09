@@ -46,6 +46,12 @@ Directory Layout
   include/                  Header files for all modules
   src/                      Implementations and main.cpp
   data/                     Four instructor-provided sample files
+  testdata/facility_collision/
+                             Member A's focused hash-collision fixture
+  testdata/facility_validation/
+                             Member A's facility-validation fixture
+  testdata/facility_tests.cpp
+                             Focused FacilityDatabase assertion driver
   testdata/hash_collision/  Custom hash collision and duplicate-ID case
   testdata/integration_validation/
                              Cross-module invalid-record cases

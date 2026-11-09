@@ -6,6 +6,8 @@
 
 #include "FacilityHashTable.h"
 
+#include <stdexcept>
+
 // Creates a table with at least one bucket.
 FacilityHashTable::FacilityHashTable(std::size_t initialCapacity)
     : buckets(initialCapacity == 0 ? 1 : initialCapacity), entryCount(0), collisions(0) {}
@@ -37,8 +39,13 @@ const Facility* FacilityHashTable::find(const std::string& normalizedId) const {
     return nullptr;
 }
 
+// Returns the bucket count.
 std::size_t FacilityHashTable::capacity() const { return buckets.size(); }
+
+// Returns the unique entry count.
 std::size_t FacilityHashTable::size() const { return entryCount; }
+
+// Returns the number of accepted insertions into occupied buckets.
 std::size_t FacilityHashTable::collisionCount() const { return collisions; }
 
 // Hashes every character with the documented polynomial formula modulo capacity.

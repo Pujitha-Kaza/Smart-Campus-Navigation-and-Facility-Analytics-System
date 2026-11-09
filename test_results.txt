@@ -115,6 +115,16 @@ Actual: Normal exit; AddressSanitizer and UndefinedBehaviorSanitizer reported no
 errors.
 Result: PASS
 
+TEST M1-12 - Focused FacilityDatabase assertion driver
+Description: Compile and run Member A's independent facility validation, search,
+collision, duplicate, missing-file, CRLF, whitespace, and empty-state tests.
+Input: g++ -std=c++17 -Wall -Wextra -Wpedantic -Werror -Iinclude
+testdata/facility_tests.cpp src/FacilityDatabase.cpp src/FacilityHashTable.cpp
+-o /tmp/facility_tests; /tmp/facility_tests
+Expected: Clean strict compilation and every FacilityDatabase assertion passes.
+Actual: Clean compilation; "All FacilityDatabase tests passed."
+Result: PASS
+
 CELL ENVIRONMENT CHECK
 The local tests above are complete. NFR-7 still requires a team member to run the
 strict build and sample execution on a UNT CSE CELL machine before submission.

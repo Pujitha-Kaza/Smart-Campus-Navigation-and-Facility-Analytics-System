@@ -11,6 +11,7 @@
 #include <fstream>
 #include <ostream>
 
+// Initializes an empty facility list and its index.
 FacilityDatabase::FacilityDatabase() : facilities(), index(kInitialCapacity) {}
 
 // Loads each valid facility once and reports line-specific warnings and diagnostics.
@@ -96,6 +97,7 @@ FacilityLoadResult FacilityDatabase::loadFromFile(
     return result;
 }
 
+// Prints records in accepted input order, followed by the total count.
 void FacilityDatabase::display(std::ostream& output) const {
     if (facilities.empty()) output << "No facilities are loaded.\n";
     for (const Facility& facility : facilities) {
@@ -106,6 +108,7 @@ void FacilityDatabase::display(std::ostream& output) const {
     output << "Total facilities: " << facilities.size() << '\n';
 }
 
+// Validates the normalized input and prints a specific invalid, missing, or found result.
 bool FacilityDatabase::searchById(const std::string& id, std::ostream& output) const {
     const std::string normalizedId = uppercase(trim(id));
     if (!validId(normalizedId)) {
@@ -123,10 +126,16 @@ bool FacilityDatabase::searchById(const std::string& id, std::ostream& output) c
     return true;
 }
 
+// Reports ordered facility count.
 std::size_t FacilityDatabase::size() const { return facilities.size(); }
+
+// Reports current index capacity.
 std::size_t FacilityDatabase::capacity() const { return index.capacity(); }
+
+// Reports current accepted collision count.
 std::size_t FacilityDatabase::collisionCount() const { return index.collisionCount(); }
 
+// Removes only spaces, tabs, and carriage returns from the outside of a field.
 std::string FacilityDatabase::trim(const std::string& text) {
     const std::string whitespace = " \t\r";
     const std::size_t first = text.find_first_not_of(whitespace);
@@ -135,6 +144,7 @@ std::string FacilityDatabase::trim(const std::string& text) {
     return text.substr(first, last - first + 1);
 }
 
+// Converts ASCII letters while leaving all other bytes unchanged.
 std::string FacilityDatabase::uppercase(const std::string& text) {
     std::string result = text;
     for (char& character : result) {
@@ -143,6 +153,7 @@ std::string FacilityDatabase::uppercase(const std::string& text) {
     return result;
 }
 
+// Accepts exactly one F and three decimal digits.
 bool FacilityDatabase::validId(const std::string& id) {
     return id.size() == 4 && id[0] == 'F'
         && std::isdigit(static_cast<unsigned char>(id[1])) != 0
@@ -150,6 +161,7 @@ bool FacilityDatabase::validId(const std::string& id) {
         && std::isdigit(static_cast<unsigned char>(id[3])) != 0;
 }
 
+// Splits by pipe and keeps empty fields, including trailing empties.
 std::vector<std::string> FacilityDatabase::split(const std::string& line) {
     std::vector<std::string> fields;
     std::size_t begin = 0;
@@ -162,6 +174,7 @@ std::vector<std::string> FacilityDatabase::split(const std::string& line) {
     return fields;
 }
 
+// Returns the filename component for concise diagnostics.
 std::string FacilityDatabase::filenameOnly(const std::string& path) {
     const std::size_t separator = path.find_last_of("/\\");
     return separator == std::string::npos ? path : path.substr(separator + 1);
