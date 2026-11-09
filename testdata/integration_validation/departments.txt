@@ -1,0 +1,9 @@
+# Three valid records and five invalid records.
+University|NONE
+Science|University
+science|University
+Unknown Child|Missing Parent
+Bad Record
+Too|Many|Fields
+|University
+Engineering|university

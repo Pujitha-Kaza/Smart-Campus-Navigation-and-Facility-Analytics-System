@@ -3,17 +3,24 @@ MILESTONE 1 CONTRIBUTIONS
 Charvi (Member A)
 - Facility records and custom facility-ID hash table
 - Facility display and facility-ID search
+- Facility file validation and hash-table load diagnostics
 
 Pujitha (Member B)
 - Campus graph representation and graph file loading
 - BFS reachability and graph counts and degrees
+- Initial graph module and pull request
 
 Gonul (Member C)
 - Department general tree and department-file validation
 - Add-department and case-insensitive department search operations
 - Indented hierarchy display and preorder traversal
-- Department tree test data, test execution, and design documentation
+- Department tree test data and tests
+- Milestone 1 integration in main.cpp, including the exact menu numbers,
+  robust line-based input, required file-load order, and optional data directory
+- Cross-module validation test data, strict compilation and sanitizer testing
+- README.txt, integrated design_document.txt, and integrated test_results.txt
 
 Shared Work
-- Program integration, the required menu, cross-module testing, README updates,
-  final documentation review, and CELL compilation verification
+- Team review of the integrated program and final demonstration
+- UNT CSE CELL compilation/run verification remains a required pre-submission
+  team check and must be recorded after it is performed

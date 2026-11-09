@@ -1,0 +1,7 @@
+# Blank lines, whitespace, and a case-insensitive duplicate are intentional.
+
+ Library 
+library
+Student Union
+Observatory
+Library|Extra Field

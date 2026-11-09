@@ -1,201 +1,281 @@
+/*
+ * File: Campus_Graph.cpp
+ * Purpose: Implements validated graph loading, statistics, and BFS reachability.
+ * Author: Pujitha; integration validation by Gonul
+ */
+
 #include "Campus_Graph.h"
-#include <iostream>
-#include <fstream>
-#include <sstream>
-#include <queue>
+
 #include <algorithm>
 #include <cctype>
+#include <fstream>
+#include <iostream>
+#include <queue>
 
-using namespace std;
+CampusGraph::CampusGraph() = default;
 
-CampusGraph::CampusGraph() {}
-
-string CampusGraph::trim(const string& text) const {
-	string result = text;
-	while (!result.empty() && isspace(result.front())) {
-		result.erase(result.begin());
-	}
-	while (!result.empty() && isspace(result.back())) {
-		result.pop_back();
-	}
-	return result;
-}
-string CampusGraph::normalize(const string& text) const {
-	string result = trim(text);
-	if (!result.empty() && result.back() == '\r') { // remove extra hidden character
-		result.pop_back();
-	}
-	for (size_t i = 0; i < result.length(); i++) { // lowercase the input
-		result[i] = tolower(result[i]);
-	}
-	return result;
-}
-
-int CampusGraph::findBuilding(const string& name) const { // building search
-  string target = normalize(name);
-  for (size_t i = 0; i < buildings.size(); i++) {
-    if (normalize(buildings[i]) == target) {
-      return i;
+std::string CampusGraph::trim(const std::string& text) {
+    std::size_t first = 0;
+    while (first < text.size()
+           && std::isspace(static_cast<unsigned char>(text[first])) != 0) {
+        ++first;
     }
-  }
-  return -1;
+
+    std::size_t last = text.size();
+    while (last > first
+           && std::isspace(static_cast<unsigned char>(text[last - 1])) != 0) {
+        --last;
+    }
+    return text.substr(first, last - first);
 }
 
-bool CampusGraph::loadBuildings(const string& filename) { // loads all buildings from building.txt
-	ifstream input(filename);
-	if (!input) {
-		cerr << "Error: could not open " << filename << endl;
-		return false;
-	}
-	string line;
-	int count = 0;
-	int lineNumber = 0;
-	while (getline(input, line)) {
-		lineNumber++;
-		if (!line.empty() && line.back() == '\r') {
-			line.pop_back();
-		}
-		string temp = trim(line);
-		if (temp.empty() || temp[0] == '#') {
-			continue;
-		}
-		line = trim(line);
-		if (findBuilding(line) != -1) {
-			cout << filename << "'s rejected line: " << lineNumber << " (duplicate building)." << endl;
-			continue;
-		}
-		buildings.push_back(line);
-		adjacency.push_back(vector<int>());
-		count++;
-	}
-	cout << count << " building(s) loaded." << endl;
-	return true;
-}
- 
-bool CampusGraph::loadConnections(const string& filename) { // loads connections from connections.txt
-	ifstream input(filename);
-	if (!input) {
-		cerr << "Error: could not open " << filename << endl;
-		return false;
-	}
-	string line;
-	int loaded = 0;
-	int rejected = 0;
-	int lineNumber = 0;
-	while (getline(input, line)) {
-		lineNumber++;
-		string temp = trim(line);
-		if (temp.empty() || temp[0] == '#') {
-			continue;
-		}
-		size_t divider = line.find('|');
-		if (divider == string::npos) {
-			rejected++;
-			continue;
-		}
-		string buildingA = trim(line.substr(0, divider));
-		string buildingB = trim(line.substr(divider + 1));
-		int indexA = findBuilding(buildingA);
-		int indexB = findBuilding(buildingB);
-		if (indexA == -1 || indexB == -1) { // if unknown building is found
-			cout << filename << "'s rejected line: " << lineNumber << " (unknown building)." << endl;
-			rejected++;
-			continue;
-		}
-		if (indexA == indexB) { // if both buildings are the same thing
-			cout << filename << "'s rejected line: " << lineNumber << " (self-connection)." << endl;
-			rejected++;
-			continue;
-		}
-		bool duplicate = false;
-		for (int neighbor : adjacency[indexA]) { // if building connection is duplicated or reversed
-			if (neighbor == indexB) {
-				duplicate = true;
-				break;
-			}
-		}
-		if (duplicate) {
-			cout << filename << "'s rejected line: " << lineNumber << " (duplicate connection)." << endl;
-			rejected++;
-			continue;
-		}
-		adjacency[indexA].push_back(indexB);
-		adjacency[indexB].push_back(indexA);
-		loaded++;
-	}
-	cout << "\nLoad Summary" << endl;
-	cout << loaded << " connection(s) loaded." << endl;
-	cout << rejected << " record(s) have been rejected." << endl;
-	return true;
+std::string CampusGraph::normalize(const std::string& text) {
+    std::string result = trim(text);
+    for (char& character : result) {
+        character = static_cast<char>(
+            std::tolower(static_cast<unsigned char>(character)));
+    }
+    return result;
 }
 
-void CampusGraph::displayGraph() const { // displays graph
-	if (buildings.empty()) {
-		cout << "No buildings in campus graph." << endl;
-		return;
-	}
-	cout << "\nCampus Graph\n";
-	for (size_t i = 0; i < buildings.size(); i++) {
-		cout << buildings[i] << ": ";
-		if (adjacency[i].empty()) {
-			cout << "(no connections)";
-		}
-		else {
-			for (size_t j = 0; j < adjacency[i].size(); j++) {
-				cout << buildings[adjacency[i][j]];
-				if (j < adjacency[i].size() - 1) {
-					cout << ", ";
-				}
-			}
-		}
-		cout << endl;
-	}
+std::string CampusGraph::filenameOnly(const std::string& path) {
+    const std::size_t separator = path.find_last_of("/\\");
+    return separator == std::string::npos ? path : path.substr(separator + 1);
 }
 
-void CampusGraph::displayStatistics() const { // displays graph stats
-	int totalConnections = 0;
-	for (size_t i = 0; i < adjacency.size(); i++) {
-		totalConnections += adjacency[i].size();
-	}
-	totalConnections /= 2;
-	cout << "\nGraph Statistics\n";
-	cout << "Total Buildings: " << buildings.size() << endl;
-	cout << "Total Connections: " << totalConnections << endl;
-	cout << "\nDegrees\n";
-	for (size_t i = 0; i < buildings.size(); i++) {
-		cout << buildings[i] << ": " << adjacency[i].size() << endl;
-	}
+int CampusGraph::findBuilding(const std::string& name) const {
+    const std::string target = normalize(name);
+    for (std::size_t index = 0; index < buildings.size(); ++index) {
+        if (normalize(buildings[index]) == target) {
+            return static_cast<int>(index);
+        }
+    }
+    return -1;
 }
 
-void CampusGraph::bfsReachability() const { // BFS reachability implementation
-	string startBuilding;
-	cout << "Enter starting building: ";
-	getline(cin, startBuilding);
-	int start = findBuilding(startBuilding);
-	if (start == -1) {
-		cout << "Building not found." << endl;
-		return;
-	}
-	vector<bool> visited(buildings.size(), false);
-	vector<int> distance(buildings.size(), -1);
-	queue<int> q;
-	visited[start] = true;
-	distance[start] = 0;
-	q.push(start);
-	int reachableCount = 0;
-	cout << "\nReachable Buildings\n";
-	while (!q.empty()) {
-		int current = q.front();
-		q.pop();
-		reachableCount++;
-		cout << buildings[current] << " (" << distance[current] << ")" << endl;
-		for (int neighbor : adjacency[current]) {
-			if (!visited[neighbor]) {
-				visited[neighbor] = true;
-				distance[neighbor] = distance[current] + 1;
-				q.push(neighbor);
-			}
-		}
-	}
-	cout << "\nReachable: " << reachableCount << " of " << buildings.size() << endl;
+bool CampusGraph::loadBuildings(const std::string& filename) {
+    return loadBuildings(filename, std::cout, std::cerr);
+}
+
+bool CampusGraph::loadBuildings(const std::string& filename,
+                                std::ostream& output,
+                                std::ostream& errors) {
+    buildings.clear();
+    adjacency.clear();
+    const std::string shownFilename = filenameOnly(filename);
+    std::ifstream input(filename);
+    if (!input.is_open()) {
+        errors << "Error: could not open " << shownFilename << ".\n";
+        output << shownFilename << ": 0 accepted, 0 rejected\n";
+        return false;
+    }
+
+    std::size_t accepted = 0;
+    std::size_t rejected = 0;
+    std::size_t lineNumber = 0;
+    std::string line;
+    while (std::getline(input, line)) {
+        ++lineNumber;
+        const std::string cleaned = trim(line);
+        if (cleaned.empty() || cleaned.front() == '#') {
+            continue;
+        }
+        if (cleaned.find('|') != std::string::npos) {
+            ++rejected;
+            errors << "Warning: " << shownFilename << " line " << lineNumber
+                   << ": expected exactly 1 field.\n";
+            continue;
+        }
+        if (findBuilding(cleaned) != -1) {
+            ++rejected;
+            errors << "Warning: " << shownFilename << " line " << lineNumber
+                   << ": duplicate building \"" << cleaned << "\".\n";
+            continue;
+        }
+        buildings.push_back(cleaned);
+        adjacency.emplace_back();
+        ++accepted;
+    }
+
+    output << shownFilename << ": " << accepted << " accepted, "
+           << rejected << " rejected\n";
+    return true;
+}
+
+bool CampusGraph::loadConnections(const std::string& filename) {
+    return loadConnections(filename, std::cout, std::cerr);
+}
+
+bool CampusGraph::loadConnections(const std::string& filename,
+                                  std::ostream& output,
+                                  std::ostream& errors) {
+    for (std::vector<int>& neighbors : adjacency) {
+        neighbors.clear();
+    }
+
+    const std::string shownFilename = filenameOnly(filename);
+    std::ifstream input(filename);
+    if (!input.is_open()) {
+        errors << "Error: could not open " << shownFilename << ".\n";
+        output << shownFilename << ": 0 accepted, 0 rejected\n";
+        return false;
+    }
+
+    std::size_t accepted = 0;
+    std::size_t rejected = 0;
+    std::size_t lineNumber = 0;
+    std::string line;
+    while (std::getline(input, line)) {
+        ++lineNumber;
+        const std::string cleaned = trim(line);
+        if (cleaned.empty() || cleaned.front() == '#') {
+            continue;
+        }
+
+        const std::size_t divider = line.find('|');
+        std::string reason;
+        if (divider == std::string::npos
+            || line.find('|', divider + 1) != std::string::npos) {
+            reason = "expected exactly 2 fields";
+        }
+
+        std::string buildingA;
+        std::string buildingB;
+        int indexA = -1;
+        int indexB = -1;
+        if (reason.empty()) {
+            buildingA = trim(line.substr(0, divider));
+            buildingB = trim(line.substr(divider + 1));
+            if (buildingA.empty() || buildingB.empty()) {
+                reason = "building names must not be empty";
+            } else {
+                indexA = findBuilding(buildingA);
+                indexB = findBuilding(buildingB);
+                if (indexA == -1 || indexB == -1) {
+                    const std::string unknown = indexA == -1 ? buildingA : buildingB;
+                    reason = "unknown building \"" + unknown + "\"";
+                } else if (indexA == indexB) {
+                    reason = "self-connection is not allowed";
+                } else {
+                    const std::vector<int>& neighbors = adjacency[indexA];
+                    if (std::find(neighbors.begin(), neighbors.end(), indexB)
+                        != neighbors.end()) {
+                        reason = "duplicate connection";
+                    }
+                }
+            }
+        }
+
+        if (!reason.empty()) {
+            ++rejected;
+            errors << "Warning: " << shownFilename << " line " << lineNumber
+                   << ": " << reason << ".\n";
+            continue;
+        }
+
+        adjacency[indexA].push_back(indexB);
+        adjacency[indexB].push_back(indexA);
+        ++accepted;
+    }
+
+    output << shownFilename << ": " << accepted << " accepted, "
+           << rejected << " rejected\n";
+    return true;
+}
+
+void CampusGraph::displayGraph() const {
+    displayGraph(std::cout);
+}
+
+void CampusGraph::displayGraph(std::ostream& output) const {
+    if (buildings.empty()) {
+        output << "No buildings are loaded.\n";
+        return;
+    }
+    for (std::size_t index = 0; index < buildings.size(); ++index) {
+        output << buildings[index] << ": ";
+        if (adjacency[index].empty()) {
+            output << "(no connections)";
+        } else {
+            for (std::size_t neighborIndex = 0;
+                 neighborIndex < adjacency[index].size();
+                 ++neighborIndex) {
+                output << buildings[adjacency[index][neighborIndex]];
+                if (neighborIndex + 1 < adjacency[index].size()) {
+                    output << ", ";
+                }
+            }
+        }
+        output << '\n';
+    }
+}
+
+void CampusGraph::displayStatistics() const {
+    displayStatistics(std::cout);
+}
+
+void CampusGraph::displayStatistics(std::ostream& output) const {
+    std::size_t doubledConnections = 0;
+    for (const std::vector<int>& neighbors : adjacency) {
+        doubledConnections += neighbors.size();
+    }
+    output << "Total buildings: " << buildings.size() << '\n';
+    output << "Total connections: " << doubledConnections / 2 << '\n';
+    output << "Degrees:\n";
+    for (std::size_t index = 0; index < buildings.size(); ++index) {
+        output << buildings[index] << ": " << adjacency[index].size() << '\n';
+    }
+}
+
+void CampusGraph::bfsReachability() const {
+    bfsReachability(std::cin, std::cout);
+}
+
+void CampusGraph::bfsReachability(std::istream& input, std::ostream& output) const {
+    if (buildings.empty()) {
+        output << "No buildings are loaded.\n";
+        return;
+    }
+
+    output << "Enter starting building: ";
+    std::string startBuilding;
+    std::getline(input, startBuilding);
+    if (trim(startBuilding).empty()) {
+        output << "Starting building cannot be blank.\n";
+        return;
+    }
+
+    const int start = findBuilding(startBuilding);
+    if (start == -1) {
+        output << "Building \"" << trim(startBuilding) << "\" was not found.\n";
+        return;
+    }
+
+    std::vector<bool> visited(buildings.size(), false);
+    std::vector<int> distance(buildings.size(), -1);
+    std::queue<int> pending;
+    visited[start] = true;
+    distance[start] = 0;
+    pending.push(start);
+    std::size_t reachableCount = 0;
+
+    while (!pending.empty()) {
+        const int current = pending.front();
+        pending.pop();
+        ++reachableCount;
+        output << buildings[current] << " (distance " << distance[current] << ")\n";
+        for (int neighbor : adjacency[current]) {
+            if (!visited[neighbor]) {
+                visited[neighbor] = true;
+                distance[neighbor] = distance[current] + 1;
+                pending.push(neighbor);
+            }
+        }
+    }
+    output << "Reachable: " << reachableCount << " of " << buildings.size()
+           << " buildings\n";
+}
+
+const std::vector<std::string>& CampusGraph::getBuildings() const {
+    return buildings;
 }

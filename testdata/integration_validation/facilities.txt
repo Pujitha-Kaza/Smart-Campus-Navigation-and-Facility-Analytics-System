@@ -1,0 +1,8 @@
+# Two valid records followed by malformed or invalid records.
+F001|Main Room|library|Study
+F004|Computer Lab|Student Union|Lab
+f001|Duplicate ID|Library|Study
+001|Bad ID|Library|Study
+F002|Unknown Building Facility|Missing Building|Study
+F003||Library|Study
+F005|Too Few Fields|Library

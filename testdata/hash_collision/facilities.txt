@@ -1,0 +1,4 @@
+# F009 and F010 both hash to bucket 0 when capacity is 11.
+F009|First Colliding Facility|Library|Test
+F010|Second Colliding Facility|Library|Test
+f009|Rejected Duplicate|Library|Test

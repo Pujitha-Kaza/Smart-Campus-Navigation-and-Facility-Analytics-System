@@ -1,0 +1,1 @@
+# No connections are needed for this hash-table test.
