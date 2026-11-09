@@ -1,0 +1,13 @@
+# Facility validation data
+
+ F001 | Shared Name | Library | General
+f002|Lowercase ID| library | Help
+F001|Duplicate ID|Library|Other
+F003|Too|Few
+F004|Too|Many|Fields|Here
+F005|||Category
+x006|Invalid ID|Library|General
+F007|Unknown Building|Nowhere|General
+F008|Shared Name|Student Union|General
+F009|Hash # in name|Science Building|Research
+F010|Shared Name|Library|General

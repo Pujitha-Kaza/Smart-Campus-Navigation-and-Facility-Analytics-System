@@ -1,5 +1,13 @@
 MILESTONE 1 CONTRIBUTIONS
 
+Charvi (Member A)
+- Facility records and custom facility-ID hash table
+- Facility display and facility-ID search
+
+Pujitha (Member B)
+- Campus graph representation and graph file loading
+- BFS reachability and graph counts and degrees
+
 Gonul (Member C)
 - Department general tree and department-file validation
 - Add-department and case-insensitive department search operations
