@@ -12,16 +12,20 @@ CampusGraph::CampusGraph() {}
 
 string CampusGraph::trim(const string& text) const {
 	string result = text;
+	while (!result.empty() && isspace(result.front())) {
+		result.erase(result.begin());
+	}
+	while (!result.empty() && isspace(result.back())) {
+		result.pop_back();
+	}
+	return result;
+}
+string CampusGraph::normalize(const string& text) const {
+	string result = trim(text);
 	if (!result.empty() && result.back() == '\r') { // remove extra hidden character
 		result.pop_back();
 	}
-	while (!result.empty() && isspace(result.front())) { // remove front
-		result.erase(result.begin());
-	}
-	while (!result.empty() && isspace(result.back())) { // remove back
-		result.pop_back();
-	}
-	for (int i = 0; i < result.length(); i++) { // lowercase the input
+	for (size_t i = 0; i < result.length(); i++) { // lowercase the input
 		result[i] = tolower(result[i]);
 	}
 	return result;
@@ -45,16 +49,19 @@ bool CampusGraph::loadBuildings(const string& filename) { // loads all buildings
 	}
 	string line;
 	int count = 0;
+	int lineNumber = 0;
 	while (getline(input, line)) {
+		lineNumber++;
 		if (!line.empty() && line.back() == '\r') {
 			line.pop_back();
 		}
-		if (line.empty()) {
+		string temp = trim(line);
+		if (temp.empty() || temp[0] == '#') {
 			continue;
-		line = trim(line);
 		}
-		if (findBuilding(line( != -1) {
-			cout << filename << ": duplicate building is rejected." << line << endl;
+		line = trim(line);
+		if (findBuilding(line) != -1) {
+			cout << filename << "'s rejected line: " << lineNumber << " (duplicate building)." << endl;
 			continue;
 		}
 		buildings.push_back(line);
@@ -77,11 +84,7 @@ bool CampusGraph::loadConnections(const string& filename) { // loads connections
 	int lineNumber = 0;
 	while (getline(input, line)) {
 		lineNumber++;
-		}
-		string temp = line;
-		while (!temp.empty() && isspace(temp.front())) {
-			temp.erase(temp.begin());
-		}
+		string temp = trim(line);
 		if (temp.empty() || temp[0] == '#') {
 			continue;
 		}
@@ -95,12 +98,12 @@ bool CampusGraph::loadConnections(const string& filename) { // loads connections
 		int indexA = findBuilding(buildingA);
 		int indexB = findBuilding(buildingB);
 		if (indexA == -1 || indexB == -1) { // if unknown building is found
-			cout << "Rejected line: " << lineNumber << " (unknown building)." << endl;
+			cout << filename << "'s rejected line: " << lineNumber << " (unknown building)." << endl;
 			rejected++;
 			continue;
 		}
 		if (indexA == indexB) { // if both buildings are the same thing
-			cout << "Rejected line: " << lineNumber << " (self-connection)." << endl;
+			cout << filename << "'s rejected line: " << lineNumber << " (self-connection)." << endl;
 			rejected++;
 			continue;
 		}
@@ -112,7 +115,7 @@ bool CampusGraph::loadConnections(const string& filename) { // loads connections
 			}
 		}
 		if (duplicate) {
-			cout << "Rejected line: " << lineNumber << " (duplicate connection)." << endl;
+			cout << filename << "'s rejected line: " << lineNumber << " (duplicate connection)." << endl;
 			rejected++;
 			continue;
 		}
